@@ -42,6 +42,7 @@ namespace Synaptafin.Editor.SelectionTracker {
     [SerializeField] protected GlobalObjectId _unityId;
 
     [SerializeField] protected Object _cachedRef;
+    // name should be cached for _cacheRef may be null
     [SerializeField] protected string _cachedName;
     [SerializeField] protected RefState _cachedRefState;
     [SerializeField] protected Texture _cachedRefIcon;

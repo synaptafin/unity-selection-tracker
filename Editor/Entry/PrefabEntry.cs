@@ -101,4 +101,5 @@ namespace Synaptafin.Editor.SelectionTracker {
       _cachedScenePath = prefabStage.scene.path;
     }
   }
+
 }

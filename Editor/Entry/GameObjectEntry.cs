@@ -105,7 +105,7 @@ namespace Synaptafin.Editor.SelectionTracker {
 
     protected bool TryRestoreFromId(out GameObject go) {
 
-      // Do not try to restore GameObject instance by globalObjectId in play mode
+      // In play mode, do not try to restore GameObject instance by globalObjectId 
       // Same globalObjectId but different instance in play mode and edit mode
       // When GameObject in playing mode is Selected, just update the entry ref
       if (Application.isPlaying) {

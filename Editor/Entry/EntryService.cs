@@ -8,17 +8,17 @@ using UnityEngine.Events;
 namespace Synaptafin.Editor.SelectionTracker {
 
   public interface IEntryService {
-    public List<Entry> GetEntries { get; }
-    public UnityEvent OnUpdated { get; }
-    public int CurrentSelectionIndex { get; set; }
-    public int SizeLimit { get; }
-    public void RecordEntry(Entry selection);
-    public void RemoveEntry(Entry selection);
-    public void RemoveAll() {
+    List<Entry> GetEntries { get; }
+    UnityEvent OnUpdated { get; }
+    int CurrentSelectionIndex { get; set; }
+    int SizeLimit { get; }
+    void RecordEntry(Entry selection);
+    void RemoveEntry(Entry selection);
+    void RemoveAll() {
       OnUpdated?.Invoke();
     }
-    public void RemoveAll(Predicate<Entry> predicate);
-    public void ResetCurrentSelection();
+    void RemoveAll(Predicate<Entry> predicate);
+    void ResetCurrentSelection();
   }
 
   [Serializable]
@@ -69,24 +69,23 @@ namespace Synaptafin.Editor.SelectionTracker {
       }
 
       ResetCurrentSelection();
-      OnUpdated?.Invoke();
+      _onUpdated?.Invoke();
     }
 
     public void RemoveEntry(Entry entry) {
 
       _entryList.Remove(entry);
-
-      OnUpdated?.Invoke();
+      _onUpdated?.Invoke();
     }
 
     public void RemoveAll() {
       _entryList.Clear();
-      OnUpdated?.Invoke();
+      _onUpdated?.Invoke();
     }
 
     public void RemoveAll(Predicate<Entry> predicate) {
       _entryList.RemoveAll(predicate);
-      OnUpdated?.Invoke();
+      _onUpdated?.Invoke();
     }
 
     public Entry PreviousSelection() {
@@ -253,5 +252,41 @@ namespace Synaptafin.Editor.SelectionTracker {
       _entries0 = new List<Entry>(_entries);
     }
 
+  }
+
+  [Serializable]
+  public class SceneComponentsService : IEntryService {
+
+    private static readonly Lazy<SceneComponentsService> s_instance = new(static () => new());
+    public static SceneComponentsService Instance => s_instance.Value;
+
+    [SerializeReference]
+    private List<Entry> _entries = new();
+    public List<Entry> GetEntries => _entries;
+
+    public UnityEvent OnUpdated { get; } = new();
+
+    public int CurrentSelectionIndex { get; set; }
+
+    public int SizeLimit { get; } = 300;
+
+    public void RecordEntry(Entry selection) {
+      if (selection == null) {
+        return;
+      }
+
+      if (_entries.Contains(selection)) {
+        return;
+      }
+
+      _entries.Add(selection);
+      OnUpdated?.Invoke();
+    }
+
+    public void RemoveEntry(Entry selection) { }
+
+    public void RemoveAll(Predicate<Entry> predicate) { }
+
+    public void ResetCurrentSelection() { }
   }
 }

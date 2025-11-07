@@ -167,13 +167,12 @@ namespace Synaptafin.Editor.SelectionTracker {
       if (token.IsCancellationRequested || !_isHover) {
         return;
       }
-      Debug.Log("Show popup window");
     }
 
     public void PointerEnterCallback(PointerEnterEvent evt) {
       if (evt.button < 0) {
         _isHover = true;
-      };
+      }
     }
 
     public void PointerLeaveCallback(PointerLeaveEvent evt) {

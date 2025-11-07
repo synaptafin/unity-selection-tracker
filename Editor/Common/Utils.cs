@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace Synaptafin.Editor.SelectionTracker {
@@ -11,10 +15,11 @@ namespace Synaptafin.Editor.SelectionTracker {
     private static readonly PreferencePersistence s_preferenceOption = PreferencePersistence.instance;
 
     static Utils() {
-      Selection.selectionChanged += RecordSelectionChange;
+      Selection.selectionChanged += SelectionChangedCallback;
+      EditorSceneManager.sceneOpened += SceneOpenedCallback;
     }
 
-    private static void RecordSelectionChange() {
+    private static void SelectionChangedCallback() {
       if (Selection.activeObject == null) {
         return;
       }
@@ -51,6 +56,47 @@ namespace Synaptafin.Editor.SelectionTracker {
         }
       }
     }
+
+
+    public static void ScanAllComponentsInScene(Scene scene) {
+      if (!scene.IsValid() || !scene.isLoaded) {
+        Debug.LogWarning($"Scene {scene.name} is not valid or not loaded.");
+        return;
+      }
+
+      Debug.Log($"Scanning components in scene: {scene.name}");
+
+      HashSet<Type> uniqueComponentTypes = new();
+      GameObject[] rootObjects = scene.GetRootGameObjects();
+
+      foreach (GameObject rootObj in rootObjects) {
+        ScanGameObjectAndChildren(rootObj, uniqueComponentTypes);
+      }
+      EntryServicePersistence.instance.Save();
+    }
+
+    private static void ScanGameObjectAndChildren(GameObject obj, HashSet<Type> uniqueTypes) {
+      // Get all components on this GameObject
+      Component[] components = obj.GetComponents<Component>();
+      foreach (Component component in components) {
+        if (component != null) {
+          if (uniqueTypes.Add(component.GetType())) {
+            EntryServicePersistence.instance.RecordComponent(EntryFactory.Create(component));
+          }
+        }
+      }
+
+      // Recursively scan children
+      Transform transform = obj.transform;
+      for (int i = 0; i < transform.childCount; i++) {
+        ScanGameObjectAndChildren(transform.GetChild(i).gameObject, uniqueTypes);
+      }
+    }
+
+    private static void SceneOpenedCallback(Scene scene, OpenSceneMode mode) {
+      ScanAllComponentsInScene(scene);
+    }
+
   }
 }
 

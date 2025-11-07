@@ -6,17 +6,17 @@ using UnityEngine.UIElements;
 
 namespace Synaptafin.Editor.SelectionTracker {
 
-  public class BaseWindow<T> : EditorWindow, IHasCustomMenu where T : IEntryService {
+  public class BaseWindow<T> : EditorWindow where T : IEntryService {
 
     public VisualTreeAsset rootVisualTreeAsset;
 
     protected T _entryService;
     protected VisualElement _windowRoot;
+    protected RefState _refStateFilter = RefState.All;
 
     private VisualElement _entryContainer;
     private readonly List<EntryElement> _entryElementsCache = new();
     private string _searchText;
-    private RefState _refStateFilter = RefState.All;
 
     public void OnEnable() {
       PreferencePersistence.instance.onUpdated += PreferencesUpdatedCallback;
@@ -44,7 +44,7 @@ namespace Synaptafin.Editor.SelectionTracker {
       _windowRoot.style.height = new StyleLength(Length.Percent(100));
 
       ToolbarSearchField searchBar = _windowRoot.Q<ToolbarSearchField>("SearchField");
-      searchBar.RegisterValueChangedCallback((ChangeEvent<string> evt) => {
+      searchBar.RegisterValueChangedCallback(evt => {
         _searchText = evt.newValue;
         ReloadView();
       });
@@ -58,10 +58,19 @@ namespace Synaptafin.Editor.SelectionTracker {
         _entryElementsCache.Add(entryElement);
       }
 
-      AddContextMenu();
       ReloadEntryList();
       ReloadView();
+      AddContextMenu();
     }
+
+    protected void ReloadView() {
+      foreach (EntryElement elt in _entryElementsCache) {
+        bool show = elt.Entry != null && IsMatch(elt) && PassFilter(elt.Entry);
+        elt.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+      }
+    }
+
+    protected virtual void AddContextMenu() { }
 
     private void ReloadEntryList() {
       List<Entry> entries = _entryService.GetEntries;
@@ -71,34 +80,6 @@ namespace Synaptafin.Editor.SelectionTracker {
         } else {
           _entryElementsCache[i].Reset();
         }
-      }
-    }
-
-    public void AddItemsToMenu(GenericMenu menu) {
-
-      menu.AddItem(
-        new GUIContent("Hide Unloaded"),
-        !_refStateFilter.HasFlag(RefState.Unloaded),
-        () => ToggleStateFilterFlag(RefState.Unloaded)
-      );
-      menu.AddItem(new GUIContent("Clear/All", "Clear tooltips"), false, RemoveAll);
-      menu.AddItem(new GUIContent("Clear/Deleted", "Clear deleted tooltips"), false, RemoveDeleted);
-      menu.AddItem(new GUIContent("Clear/Destroyed", "Clear destroyed tooltips"), false, RemoveDestroyed);
-    }
-
-    public void AddContextMenu() {
-      ContextualMenuManipulator contextMenuManipulator = new((evt) => {
-        evt.menu.AppendAction("Show Unloaded", null, DropdownMenuAction.AlwaysEnabled);
-        evt.menu.AppendAction("Show Destroyed", null, DropdownMenuAction.AlwaysEnabled);
-        evt.menu.AppendAction("Clear", (_) => RemoveAll(), DropdownMenuAction.AlwaysEnabled);
-      });
-      _windowRoot.AddManipulator(contextMenuManipulator);
-    }
-
-    private void ReloadView() {
-      foreach (EntryElement elt in _entryElementsCache) {
-        bool show = elt.Entry != null && IsMatch(elt) && PassFilter(elt.Entry);
-        elt.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
       }
     }
 

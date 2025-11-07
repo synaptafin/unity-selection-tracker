@@ -29,6 +29,17 @@ namespace Synaptafin.Editor.SelectionTracker {
       wnd.titleContent = titleContent;
     }
 
+    [MenuItem(Constants.MENU_PATH_PREFIX + "Scene Components")]
+    public static void SceneComponentsWindow() {
+      SceneComponentsWindow wnd = EditorWindow.GetWindow<SceneComponentsWindow>();
+      GUIContent titleContent = new("Scene Components") {
+        text = "Scene Components",
+        tooltip = "Scene Components Window",
+        image = EditorGUIUtility.IconContent(UnityBuiltInIcons.DEFAULT_ASSET_ICON_NAME).image
+      };
+      wnd.titleContent = titleContent;
+    }
+
     /* [MenuItem(Constants.MENU_PATH_PREFIX + "Favorites")] */
     public static void FavoritesWindow() {
       FavoritesWindow wnd = EditorWindow.GetWindow<FavoritesWindow>();

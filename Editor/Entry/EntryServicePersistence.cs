@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -24,6 +25,10 @@ namespace Synaptafin.Editor.SelectionTracker {
       if (!TryGetService(out FavoritesService _)) {
         _entryServices.Add(FavoritesService.Instance);
       }
+      if (!TryGetService(out SceneComponentsService _)) {
+        _entryServices.Add(SceneComponentsService.Instance);
+      }
+
       foreach (IEntryService entryService in EntryServices) {
         entryService?.OnUpdated.AddListener(OnServiceUpdate);
       }
@@ -33,6 +38,10 @@ namespace Synaptafin.Editor.SelectionTracker {
       ServiceDict[nameof(HistoryService)]?.RecordEntry(selection);
       ServiceDict[nameof(MostVisitedService)]?.RecordEntry(selection);
       Save(true);
+    }
+
+    public void RecordComponent(Entry entry) {
+      ServiceDict[nameof(SceneComponentsService)]?.RecordEntry(entry);
     }
 
     public void RecordFavorites(Entry entry, bool isFavorite = false) {
@@ -59,6 +68,7 @@ namespace Synaptafin.Editor.SelectionTracker {
       }
     }
 
+    // get service by type
     public bool TryGetService<T>(out T service) where T : IEntryService {
       if (ServiceDict.TryGetValue(typeof(T).Name, out IEntryService entryService)) {
         service = (T)entryService;
@@ -66,6 +76,10 @@ namespace Synaptafin.Editor.SelectionTracker {
       }
       service = default;
       return false;
+    }
+
+    public void Save() {
+      Save(true);
     }
 
     private void OnServiceUpdate() {

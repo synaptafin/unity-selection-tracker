@@ -20,9 +20,15 @@ namespace Synaptafin.Editor.SelectionTracker {
         }
       }
 
+      // normal asset or prefab asset
       if (id.identifierType is 1 or 3) {
         return new NormalAssetEntry(obj, id);
       }
+
+      if (obj is Component component) {
+        return new ComponentEntry(component, id);
+      }
+
       return null;
     }
   }
