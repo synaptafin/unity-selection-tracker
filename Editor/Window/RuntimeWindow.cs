@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEditor.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace Synaptafin.Editor.SelectionTracker {
@@ -104,6 +105,11 @@ namespace Synaptafin.Editor.SelectionTracker {
   }
   public class SceneComponentsWindow : BaseEntryWindow<SceneComponentsService>, IHasCustomMenu {
 
+    public new void CreateGUI() {
+      base.CreateGUI();
+      Refresh();
+    }
+
     public void AddItemsToMenu(GenericMenu menu) {
       menu.AddItem(
         new GUIContent("Refresh"),
@@ -120,7 +126,13 @@ namespace Synaptafin.Editor.SelectionTracker {
     }
 
     private void Refresh() {
-      Utils.ScanAllComponentsInScene(SceneManager.GetActiveScene());
+      PrefabStage prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+
+      if (prefabStage != null) {
+        Utils.ScanAllComponentsInScene(prefabStage.scene);
+      } else {
+        Utils.ScanAllComponentsInScene(SceneManager.GetActiveScene());
+      }
     }
   }
 

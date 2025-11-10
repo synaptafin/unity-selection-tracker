@@ -17,6 +17,11 @@ namespace Synaptafin.Editor.SelectionTracker {
     static Utils() {
       Selection.selectionChanged += SelectionChangedCallback;
       EditorSceneManager.sceneOpened += SceneOpenedCallback;
+      PrefabStage.prefabStageOpened += PrefabStageOpenedCallback;
+      PrefabStage.prefabStageClosing += static (prefabStage) => {
+        Scene activeScene = SceneManager.GetActiveScene();
+        ScanAllComponentsInScene(activeScene);
+      };
     }
 
     private static void SelectionChangedCallback() {
@@ -58,6 +63,7 @@ namespace Synaptafin.Editor.SelectionTracker {
     }
 
     public static void ScanAllComponentsInScene(Scene scene) {
+
       SceneComponentsService service = EntryServicePersistence.instance.GetService<SceneComponentsService>();
       service.Entries.Clear();
       if (!scene.IsValid() || !scene.isLoaded) {
@@ -102,6 +108,9 @@ namespace Synaptafin.Editor.SelectionTracker {
       ScanAllComponentsInScene(scene);
     }
 
+    private static void PrefabStageOpenedCallback(PrefabStage prefabStage) {
+      ScanAllComponentsInScene(prefabStage.scene);
+    }
   }
 }
 

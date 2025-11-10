@@ -241,10 +241,9 @@ namespace Synaptafin.Editor.SelectionTracker {
 
     [SerializeReference]
     private List<Entry> _entries = new();
+
     public List<Entry> Entries => _entries;
-
     public UnityEvent OnUpdated { get; } = new();
-
     public int CurrentSelectionIndex { get; set; }
 
     public void RecordEntry(Entry selection) {
