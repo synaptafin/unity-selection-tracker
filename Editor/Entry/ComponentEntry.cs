@@ -48,9 +48,19 @@ namespace Synaptafin.Editor.SelectionTracker {
         FindGameObjectsWithComponent(rootObj, componentType, objectsWithComponent);
       }
 
-      if (objectsWithComponent.Count == 0) {
-        Debug.Log($"No GameObjects found with component type: {componentType.Name}");
-        return;
+      // DontDestroyOnLoad Scene
+      if (Application.isPlaying) {
+        GameObject temp = new("TempForDDOL");
+        UnityEngine.Object.DontDestroyOnLoad(temp);
+        Scene dontDestroyOnLoadScene = temp.scene;
+        UnityEngine.Object.DestroyImmediate(temp);
+
+        if (dontDestroyOnLoadScene.IsValid()) {
+          GameObject[] ddolRootObjects = dontDestroyOnLoadScene.GetRootGameObjects();
+          foreach (GameObject rootObj in ddolRootObjects) {
+            FindGameObjectsWithComponent(rootObj, componentType);
+          }
+        }
       }
 
       ComponentListSupportService componentListService = EntryServicePersistence.instance.GetService<ComponentListSupportService>();

@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Synaptafin.Editor.SelectionTracker {
   public static class EntryFactory {
@@ -10,6 +11,11 @@ namespace Synaptafin.Editor.SelectionTracker {
 
         // prefab instance is treated as gameobject
         if (id.identifierType == 2) {
+          return new GameObjectEntry(go, id);
+        }
+
+        // identifierType=2 doesn't cover DDOL objects
+        if (go.scene == GetDontDestroyOnLoadScene()) {
           return new GameObjectEntry(go, id);
         }
 
@@ -31,6 +37,15 @@ namespace Synaptafin.Editor.SelectionTracker {
 
       return null;
     }
+
+    private static Scene GetDontDestroyOnLoadScene() {
+      GameObject temp = new("TempForDDOL");
+      Object.DontDestroyOnLoad(temp);
+      Scene dontDestroyOnLoadScene = temp.scene;
+      Object.DestroyImmediate(temp);
+      return dontDestroyOnLoadScene;
+    }
   }
+
 }
 

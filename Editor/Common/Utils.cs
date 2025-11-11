@@ -78,6 +78,21 @@ namespace Synaptafin.Editor.SelectionTracker {
         ScanGameObjectAndChildren(rootObj, uniqueComponentTypes);
       }
 
+      // GameObjects in DontDestroyOnLoad scene
+      if (Application.isPlaying) {
+        GameObject temp = new("TempForDDOL");
+        Object.DontDestroyOnLoad(temp);
+        Scene dontDestroyOnLoadScene = temp.scene;
+        Object.DestroyImmediate(temp);
+
+        if (dontDestroyOnLoadScene.IsValid()) {
+          GameObject[] ddolRootObjects = dontDestroyOnLoadScene.GetRootGameObjects();
+          foreach (GameObject rootObj in ddolRootObjects) {
+            ScanGameObjectAndChildren(rootObj, uniqueComponentTypes);
+          }
+        }
+      }
+
       service.Refresh();
     }
 
